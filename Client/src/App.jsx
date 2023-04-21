@@ -4,7 +4,7 @@ import { Route, Routes } from "react-router-dom";
 
 import Home from './Page/Home'
 import User from './Page/User'
-
+import Test from './Page/Test'
 
 function App() {
 
@@ -13,6 +13,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/user" element={<User />} />
+        <Route path="/test" element={<Test />} />
       </Routes>
     </div>
   );
