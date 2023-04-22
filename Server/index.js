@@ -22,10 +22,6 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("receive_message", data);
   });
 
-  socket.on("add_time", (data) => {
-    socket.broadcast.emit("receive_time", data);
-  });
-
   console.log("Client connected");
 
   socket.emit("timeUpdate", timeLeft);
@@ -43,6 +39,18 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log("Client disconnected");
   });
+
+  socket.on("startTimer", (data) => {
+    socket.broadcast.emit("getTimer", data);
+  });
+
+  socket.on("pauseTimer", (data) => {
+    socket.broadcast.emit("getPauseTimer", data);
+  });
+  socket.on("resumeTimer", (data) => {
+    socket.broadcast.emit("getResumeTimer", data);
+  });
+
   
 });
 

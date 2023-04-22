@@ -1,42 +1,34 @@
-import React, { useState, useEffect } from "react";
-import io from "socket.io-client";
+import React, { useState } from "react";
 
-const socket = io("http://localhost:3000"); // change to your server URL
+const SiblingOne = ({ onClick }) => {
+  const handleClick = () => {
+    onClick();
+  };
 
-function Test() {
-    const [secondsLeft, setSecondsLeft] = useState(300);
+  return <button onClick={handleClick}>Click me</button>;
+};
 
-    useEffect(() => {
-        if (secondsLeft <= 0) return;
+const SiblingTwo = () => {
+  const handleButtonClick = () => {
+    console.log("Button clicked");
+  };
 
-        const intervalId = setInterval(() => {
-            setSecondsLeft((secondsLeft) => secondsLeft - 1);
-            socket.emit("timeUpdate", secondsLeft - 1);
-        }, 1000);
+  return <div>Sibling Two</div>;
+};
 
-        return () => clearInterval(intervalId);
-    }, [secondsLeft]);
+const Test = () => {
+  const [state, setState] = useState(false);
 
-    const minutes = Math.floor(secondsLeft / 60);
-    const seconds = secondsLeft % 60;
+  const handleSiblingOneClick = () => {
+    setState(true);
+  };
 
-    const handleAddTime = (amountInSeconds) => {
-        socket.emit("timeAdd", amountInSeconds);
-    };
-
-    useEffect(() => {
-        socket.on("timeAdd", (amountInSeconds) => {
-            setSecondsLeft((secondsLeft) => secondsLeft + amountInSeconds);
-        });
-    }, []);
-
-    return (
-        <div className="display-text">
-            {minutes}:{seconds < 10 ? "0" : ""}{seconds}
-            <button onClick={() => handleAddTime(60)}>Add 1 minute</button>
-            <button onClick={() => handleAddTime(300)}>Add 5 minutes</button>
-        </div>
-    );
-}
+  return (
+    <>
+      <SiblingOne onClick={handleSiblingOneClick} />
+      {state && <SiblingTwo />}
+    </>
+  );
+};
 
 export default Test;
