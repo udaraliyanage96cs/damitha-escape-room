@@ -122,11 +122,12 @@ export default function User() {
           </div>
         )}
       </div>
-      <div className="display-text h-25 d-flex align-items-center justify-content-center">
+      <div className="display-text h-25 align-items-center justify-content-center">
         <h1 className="timer">
           {minutes}:{seconds < 10 ? "0" : ""}
           {seconds}
         </h1>
+        <div className="mt-3 display-text">Developed By <a className="my_web" href="https://udarax.me/" target="_blank">UDARAX.ME</a></div>
       </div>
     </div>
   );
