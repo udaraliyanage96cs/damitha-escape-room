@@ -17,7 +17,7 @@ function App() {
   const [audioTrack1] = useState(new Audio(SoundTrack1));
   const [audioTrack2] = useState(new Audio(SoundTrack2));
 
-  const [secondsLeft, setSecondsLeft] = useState(3600);
+  const [secondsLeft, setSecondsLeft] = useState(parseInt(localStorage.getItem("countdownTime")) || 3600);
   const [timerStart, setTimerStart] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
 
@@ -42,17 +42,32 @@ function App() {
 
   const startTimer = () => {
     setStart(true);
+    localStorage.setItem("startTimerVal", true)
     socket.emit("startTimer", "true");
     setTimerStart(true);
     playAudioBackground();
+    console.log("aaaaa");
   };
+
+  const resetTimer = () => {
+    socket.emit("send_time_data", 3600 );
+    localStorage.setItem("countdownTime", 3600);
+    socket.emit("resetTimer", "true");
+    setTimerStart(false);
+    setStart(false);
+    setSecondsLeft(3600);
+    localStorage.setItem("startTimerVal", false)
+    socket.emit("startTimer", "false");
+  }
 
   const pauseTimer = () => {
     pauseAudio();
     setIsPaused(true);
     socket.emit("pauseTimer", "true");
+    localStorage.setItem("startTimerVal", false)
   };
   const resumeTimer = () => {
+    localStorage.setItem("startTimerVal", true)
     //audioTrack2.play();
     setIsPaused(false);
     socket.emit("resumeTimer", "true");
@@ -89,12 +104,23 @@ function App() {
     setIsPlaying(false);
   };
 
+  
+  useEffect(()=>{
+    console.log(localStorage.getItem("startTimerVal"))
+    if(localStorage.getItem("startTimerVal")=="true"){
+      console.log("here");
+      startTimer();
+    }
+  },[]);
+
   useEffect(() => {
     if (timerStart) {
       if (secondsLeft <= 0) return;
       const intervalId = setInterval(() => {
         if (!isPaused) {
           setSecondsLeft((secondsLeft) => secondsLeft - 1);
+          socket.emit("send_time_data", secondsLeft );
+          localStorage.setItem("countdownTime", secondsLeft)
         }
       }, 1000);
 
@@ -144,6 +170,13 @@ function App() {
             )}
           </div>
         )}
+        <div className="w-fit">
+          <div className="form-group   mt-4">
+            <button className="btn btn-primary" onClick={resetTimer}>
+              Reset Timer
+            </button>
+          </div>
+        </div>
       </div>
 
       <hr className="mt-4 mb-4 c-white" />
@@ -199,7 +232,6 @@ function App() {
           Send
         </button>
       </div>
-      <div className="mt-5 display-text">Developed By <a className="my_web" href="https://udarax.me/" target="_blank">UDARAX.ME</a></div>
     </div>
   );
 }

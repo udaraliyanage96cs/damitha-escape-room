@@ -10,18 +10,20 @@ export default function User() {
   const [loading, setLoading] = useState(true);
   const [showContent, setShowContent] = useState(false);
 
-  const [secondsLeft, setSecondsLeft] = useState(3600);
-  const [timerStart, setTimerStart] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioTrack1] = useState(new Audio(SoundTrack1));
   const [audioTrack2] = useState(new Audio(SoundTrack2));
-  const [volume, setVolume] = useState(0.5);
+
+  const [mainTime, setMainTime] = useState(0);
+  const [sec, setSec] = useState(60);
+  const [min, setMin] = useState(60);
 
   useEffect(() => {
     let timeout = 0;
     socket.on("receive_message", (data) => {
+      console.log("a");
       playAudio();
       setShowContent(true);
       console.log(data);
@@ -33,53 +35,47 @@ export default function User() {
       }, timeout);
     });
     socket.on("getTimer", (data) => {
-      playAudioBackground();
-      console.log(data);
-      setIsPaused(false);
+      console.log("b");
       if (data == "true") {
+        playAudioBackground();
         console.log(data);
-        setTimerStart(true);
+        setIsPaused(false);
+        console.log(data);
+      }else{
+        setIsPaused(true);
       }
     });
     socket.on("getPauseTimer", (data) => {
+      console.log("c");
       pauseAudio();
       if (data == "true") {
         setIsPaused(true);
       }
     });
     socket.on("getResumeTimer", (data) => {
+      console.log("d");
       audioTrack2.play();
       console.log(data);
       if (data == "true") {
         setIsPaused(false);
       }
     });
-  }, [socket]);
-
-  useEffect(() => {
-    socket.on("timeAdd", (amountInSeconds) => {
-      console.log(amountInSeconds.time_in_min);
-      setSecondsLeft(
-        (secondsLeft) => secondsLeft + parseInt(amountInSeconds.time_in_min)
-      );
+    socket.on("getResetTimer", (data) => {
+      console.log("e");
+      stopAudio();
     });
-  }, []);
-
-  useEffect(() => {
-    if (timerStart) {
-      if (secondsLeft <= 0) return;
-      const intervalId = setInterval(() => {
-        if (!isPaused) {
-          setSecondsLeft((secondsLeft) => secondsLeft - 1);
-        }
-      }, 1000);
-
-      return () => clearInterval(intervalId);
-    }
-  }, [secondsLeft, timerStart, isPaused]);
-
-  const minutes = Math.floor(secondsLeft / 60);
-  const seconds = secondsLeft % 60;
+    socket.on("get_time_data", (data) => {
+      console.log("f");
+      playAudioBackground();
+      setMainTime(data);
+      let minutes_new = Math.floor(data / 60);
+      let seconds_new = data % 60;
+      console.log(minutes_new + ":" + seconds_new);
+      setSec(seconds_new);
+      setMin(minutes_new);
+    });
+    console.log("g");
+  }, [socket]);
 
   useEffect(() => {
     const handleEnd = () => setIsPlaying(false);
@@ -101,6 +97,15 @@ export default function User() {
     audioTrack2.volume = 0.5;
   };
 
+  const stopAudio = () => {
+    audioTrack1.pause();
+    audioTrack1.currentTime = 0;
+
+    audioTrack2.pause();
+    audioTrack2.currentTime = 0;
+    setIsPlaying(false);
+  };
+
   const playAudioBackground = () => {
     audioTrack2.play();
     setIsPlaying(true);
@@ -117,17 +122,18 @@ export default function User() {
         {!loading && (
           <div className="h-75  d-flex ">
             {showContent && (
-                <div className="display-text mesage-text d-flex align-items-center">{messageReceived.data.message}</div>
+              <div className="display-text mesage-text d-flex align-items-center">
+                {messageReceived.data.message}
+              </div>
             )}
           </div>
         )}
       </div>
       <div className="display-text h-25 align-items-center justify-content-center">
-        <h1 className="timer">
-          {minutes}:{seconds < 10 ? "0" : ""}
-          {seconds}
-        </h1>
-        <div className="mt-3 display-text">Developed By <a className="my_web" href="https://udarax.me/" target="_blank">UDARAX.ME</a></div>
+        <h4 className="timer">
+          {min}:{sec < 10 ? "0" : ""}
+          {sec}
+        </h4>
       </div>
     </div>
   );

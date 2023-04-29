@@ -10,7 +10,7 @@ const server = http.createServer(app);
 let timeLeft = 300; // 5 minutes in seconds
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173/",
+    origin: "*",
     methods: ["GET", "POST"],
   },
 });
@@ -51,6 +51,13 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("getResumeTimer", data);
   });
 
+  socket.on("resetTimer", (data) => {
+    socket.broadcast.emit("getResetTimer", data);
+  });
+  
+  socket.on("send_time_data", (data) => {
+    socket.broadcast.emit("get_time_data", data);
+  });
   
 });
 
